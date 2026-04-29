@@ -2,7 +2,7 @@
 
 회계법인 IT 감사인의 시각으로 한국 ISMS-P 인증기준을 ITGC 감사 절차에 매핑한 실무 노트.
 
-> ⚠️ **현재 작성 중.** 122개 인증기준 매핑은 점진적으로 채워집니다. 진행 방식·읽기 순서는 [`00-meta/reading-order.md`](./00-meta/reading-order.md) 참조.
+> ⚠️ **현재 작성 중.** 101개 인증기준 매핑은 점진적으로 채워집니다. 진행 방식·읽기 순서는 [`00-meta/reading-order.md`](./00-meta/reading-order.md) 참조.
 
 ## 누구를 위한 자료인가
 
@@ -25,29 +25,56 @@
 
 ## 어떻게 매핑하는가
 
-ITGC 4대 영역과 ISMS-P 인증기준의 정합성 있는 부분을 우선 매핑한다.
+KISA 현행 ISMS-P 인증기준 **101개** (2023.11 안내서 기준)를 ITGC 거리감 3 분류로 정렬한다.
 
-| ITGC 영역 | ISMS-P 인증기준 (주요) |
-|---|---|
-| Access to Programs and Data | 2.5 인증 및 권한 관리, 2.6 접근 통제 |
-| Program Changes | 2.8 정보시스템 도입 및 개발 보안, 2.9.5 변경 관리 |
-| Computer Operations | 2.9 시스템 및 서비스 운영, 2.11 사고 예방·대응, 2.12 재해복구 |
-| Program Development | 2.8 정보시스템 도입 및 개발 보안 |
+| 분류 | 의미 | 매핑되는 ISMS-P 영역 | 개수 |
+|---|---|---|---|
+| **직접 (1-direct)** | ITGC 4영역(APD/PC/CO/PD)에 직결 | 2.4(물리), 2.5, 2.6, 2.7.2, 2.8, 2.9, 2.10, 2.11, 2.12 | ~49 |
+| **간접 (2-indirect)** | Entity-Level Controls (ELC, 전사수준통제) | 1장 전체, 2.1, 2.2, 2.3, 2.4.7, 2.7.1 | ~31 |
+| **기타 (3-other)** | ITGC 거의 무관, 참고용 | 3장 개인정보 처리단계 | 21 |
 
-ISMS-P 122개 인증기준 중 ITGC와 직접 매핑되지 않는 영역(2.4 물리 보안, 2.7 암호화, 3장 개인정보 처리단계 21개)도 별도 카테고리로 다룬다. 회계감사 ITGC에서는 잘 다루지 않지만 ISMS-P 인증을 받으려는 클라이언트 관점에서는 동등하게 중요하다.
+직접 영역은 다시 ITGC 표준 4영역으로 분류:
+
+| ITGC 약어 | 풀이 | 매핑되는 ISMS-P 인증기준 |
+|---|---|---|
+| **APD** | Access to Programs and Data | 2.5(인증·권한), 2.6(접근통제), 2.7.2(키관리) |
+| **PC** | Program Changes | 2.8.6(운영환경 이관), 2.9.1(변경관리) |
+| **CO** | Computer Operations | 2.4(물리), 2.9.2~7(운영), 2.10(보안), 2.11(사고), 2.12(재해복구) |
+| **PD** | Program Development | 2.8.1~2.8.5(도입·개발 보안) |
+
+3장 개인정보 처리단계는 ITGC가 직접 다루지 않지만, ISMS-P 인증을 받으려는 클라이언트 관점에서는 동등하게 중요하므로 별도 카테고리(`3-other/`)로 다룬다.
 
 ## 디렉토리 구조
 
 ```
 .
 ├── 00-meta/                         배경, 방법론, 읽는 순서
-├── 01-itgc-mapping/                 ITGC 4대 영역 → ISMS-P 매핑 (메인)
-│   ├── access-to-data/
-│   ├── change-management/
-│   ├── computer-operations/
-│   └── program-development/
+├── 01-itgc-mapping/                 ITGC 거리감별 매핑 (메인)
+│   ├── 1-direct/                    ITGC 직접 매핑 (~49)
+│   │   ├── apd/                     Access to Programs and Data
+│   │   ├── pc/                      Program Changes
+│   │   ├── co/                      Computer Operations
+│   │   │   ├── operations/          2.9.x 운영
+│   │   │   ├── security/            2.10.x 보안운영
+│   │   │   ├── incident/            2.11.x 사고대응
+│   │   │   ├── dr/                  2.12.x 재해복구
+│   │   │   └── physical/            2.4.x 물리
+│   │   └── pd/                      Program Development
+│   ├── 2-indirect/                  ITGC 간접 매핑 — ELC (~31)
+│   │   └── elc/
+│   │       ├── governance/          1장 관리체계
+│   │       ├── policy/              2.1, 2.4.7
+│   │       ├── personnel/           2.2 인적보안
+│   │       ├── third-party/         2.3 외부자
+│   │       └── crypto-policy/       2.7.1 암호정책
+│   └── 3-other/                     ITGC 거의 무관, 참고용 (~21)
+│       └── privacy-lifecycle/       3장 개인정보 처리단계
+│           ├── 3.1-collection/      수집
+│           ├── 3.2-use/             보유·이용
+│           ├── 3.3-provision/       제공
+│           ├── 3.4-deletion/        파기
+│           └── 3.5-rights/          정보주체 권리
 ├── 02-itac-mapping/                 응용 통제(ITAC) → ISMS-P 매핑
-├── 03-isms-p-only/                  ITGC 외 ISMS-P 고유 영역
 ├── 04-laws/                         개보법, 정통망법, 전금법, 신용정보법
 ├── 05-defects-encyclopedia/         결함 사례 백과
 │   ├── from-real-cases/             실제 감사 케이스 (익명화)
@@ -65,7 +92,7 @@ ISMS-P 122개 인증기준 중 ITGC와 직접 매핑되지 않는 영역(2.4 물
 
 ## 주된 목적
 
-이 매핑 작업의 가장 큰 목적은 작성자 본인의 학습이다. ISMS-P 인증심사원 시험 준비를 어차피 해야 하는데, 122개 인증기준을 무작정 외우는 것보다 4년 넘게 해온 ITGC 실무에 매핑하면서 익히는 게 효율적이다. 사람의 기억은 새로운 정보를 기존 지식에 엮을 때 가장 강하게 남는다.
+이 매핑 작업의 가장 큰 목적은 작성자 본인의 학습이다. ISMS-P 인증심사원 시험 준비를 어차피 해야 하는데, 101개 인증기준을 무작정 외우는 것보다 6년 넘게 해온 ITGC 실무에 매핑하면서 익히는 게 효율적이다. 사람의 기억은 새로운 정보를 기존 지식에 엮을 때 가장 강하게 남는다.
 
 겸사겸사, 이 매핑 작업이 비슷한 고민을 하는 회계법인 IT 감사인들에게 참고 자료가 되기를 바란다. 빅4 내부 메소돌로지는 외부에 공개되지 않고, 작은 회계법인 IT 감사인은 참고할 한국어 자료가 빈약하다. 이 레포가 그 공백을 조금이라도 메우면 좋겠다.
 

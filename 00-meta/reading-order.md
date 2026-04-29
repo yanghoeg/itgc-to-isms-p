@@ -13,7 +13,7 @@
 5. `01-itgc-mapping/1-direct/pd/` — Program Development
 6. `01-itgc-mapping/1-direct/pc/` — Program Changes
 7. `01-itgc-mapping/2-indirect/elc/` — Entity-Level Controls (전사수준통제)
-8. `05-defects-encyclopedia/` — 결함 사례 백과. 본인 케이스와 비교 참고
+8. `01-itgc-mapping/MATRIX.md` — ISMS × ITGC 양방향 매핑 매트릭스 (한 페이지 압축 view)
 
 ## ISMS-P 응시생 중 회계감사 백그라운드
 
@@ -33,7 +33,7 @@ KICPA 또는 회계법인 IT 감사인 경력이 있고, ISMS-P 인증심사원 
 
 다만 다음 부분은 일반 응시생에게도 가치가 있을 수 있다.
 
-1. `05-defects-encyclopedia/` — 결함 사례 패턴
+1. `01-itgc-mapping/MATRIX.md` — 인증기준 양방향 인덱스
 2. `04-laws/` — 법령 정리
 3. `01-itgc-mapping/3-other/privacy-lifecycle/` — 3장 개인정보 처리단계
 

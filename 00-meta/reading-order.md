@@ -42,7 +42,7 @@ KICPA 또는 회계법인 IT 감사인 경력이 있고, ISMS-P 인증심사원 
 회계법인 IT 감사가 무엇인지부터 알고 싶은 경우.
 
 1. `00-meta/why-this-repo.md` — 한국 ITGC 표준 부재 배경
-2. `01-itgc-mapping/README.md` — ITGC 거리감 3 분류 + 4영역(APD/PC/CO/PD) 약어 개요
+2. `01-itgc-mapping/README.md` — ITGC 3가지 분류 + 4영역(APD/PC/CO/PD) 약어 개요
 3. 외부 자료 보강 권장 — IIA(내부감사인협회) ITGC 자료, ISACA CISA 교재 등
 
 ## 진행 상태

@@ -1,0 +1,14 @@
+# Claude 인격·작업 규약 (개인 신경 프로파일·가족·자기비하 처리 규약 포함 — 공개 금지)
+CLAUDE.md
+
+# Claude 로컬 작업 디렉토리
+.claude/
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/

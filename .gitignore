@@ -10,6 +10,7 @@ bin/
 # Site build output
 site/dist/
 site/node_modules/
+site/.wrangler/
 
 # OS / 에디터
 .DS_Store

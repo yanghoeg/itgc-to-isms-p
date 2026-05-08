@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<script>((d)=>{const t=localStorage.getItem('theme');if(t)d.setAttribute('data-theme',t);else if(matchMedia('(prefers-color-scheme:dark)').matches)d.setAttribute('data-theme','dark')})(document.documentElement)</script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}} — ITGC 실무 가이드</title>
+  <link rel="canonical" href="https://guide.propsol.co.kr/{{SLUG}}" />
+  <meta name="description" content="{{TITLE}} — ISMS-P × ITGC 매핑 실무 가이드. 인증기준별 ITGC 영역 매핑과 IT감사 실무 포인트." />
+  <meta property="og:title" content="{{TITLE}} — ITGC 실무 가이드" />
+  <meta property="og:description" content="ISMS-P × ITGC 매핑 실무 가이드" />
+  <meta property="og:url" content="https://guide.propsol.co.kr/{{SLUG}}" />
+  <meta property="og:type" content="article" />
+  <meta name="robots" content="index, follow" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #f4f4f5;
+      --surface-2: #e4e4e7;
+      --border: #d4d4d8;
+      --border-strong: #a1a1aa;
+      --muted: #71717a;
+      --text: #18181b;
+      --sub: #52525b;
+      --sub-2: #3f3f46;
+      --accent: #2563eb;
+      --accent-strong: #1d4ed8;
+      --accent-dim: rgba(37,99,235,0.08);
+      --accent-border: rgba(37,99,235,0.20);
+      --tag-apd: #2563eb; --tag-apd-bg: rgba(37,99,235,0.08);
+      --tag-pc: #7c3aed; --tag-pc-bg: rgba(124,58,237,0.08);
+      --tag-co: #d97706; --tag-co-bg: rgba(217,119,6,0.08);
+      --tag-pd: #059669; --tag-pd-bg: rgba(5,150,105,0.08);
+      --tag-elc: #0d9488; --tag-elc-bg: rgba(13,148,136,0.08);
+      color-scheme: light dark;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #09090b; --surface: #18181b; --surface-2: #1f1f23;
+        --border: #27272a; --border-strong: #3f3f46; --muted: #52525b;
+        --text: #fafafa; --sub: #a1a1aa; --sub-2: #d4d4d8;
+        --accent: #5B92F4; --accent-strong: #7BA8F7;
+        --accent-dim: rgba(91,146,244,0.12); --accent-border: rgba(91,146,244,0.25);
+        --tag-apd: #5B92F4; --tag-apd-bg: rgba(91,146,244,0.12);
+        --tag-pc: #a78bfa; --tag-pc-bg: rgba(167,139,250,0.12);
+        --tag-co: #fbbf24; --tag-co-bg: rgba(251,191,36,0.10);
+        --tag-pd: #34d399; --tag-pd-bg: rgba(52,211,153,0.10);
+        --tag-elc: #2dd4bf; --tag-elc-bg: rgba(45,212,191,0.10);
+      }
+    }
+
+    [data-theme="dark"] {
+      --bg: #09090b; --surface: #18181b; --surface-2: #1f1f23;
+      --border: #27272a; --border-strong: #3f3f46; --muted: #52525b;
+      --text: #fafafa; --sub: #a1a1aa; --sub-2: #d4d4d8;
+      --accent: #5B92F4; --accent-strong: #7BA8F7;
+      --accent-dim: rgba(91,146,244,0.12); --accent-border: rgba(91,146,244,0.25);
+      --tag-apd: #5B92F4; --tag-apd-bg: rgba(91,146,244,0.12);
+      --tag-pc: #a78bfa; --tag-pc-bg: rgba(167,139,250,0.12);
+      --tag-co: #fbbf24; --tag-co-bg: rgba(251,191,36,0.10);
+      --tag-pd: #34d399; --tag-pd-bg: rgba(52,211,153,0.10);
+      --tag-elc: #2dd4bf; --tag-elc-bg: rgba(45,212,191,0.10);
+    }
+
+    html { height: 100%; scroll-behavior: smooth; }
+
+    body {
+      min-height: 100%;
+      background: var(--bg); color: var(--text);
+      font-family: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 3rem 1.5rem 4rem; line-height: 1.55;
+    }
+
+    .top-bar {
+      position: fixed; top: 1.25rem; right: 1.25rem;
+      border: 1px solid var(--border); border-radius: 0.4rem;
+      overflow: hidden; background: var(--bg); z-index: 10;
+    }
+    .top-bar button {
+      background: none; border: none; padding: 0.3rem 0.6rem;
+      font-size: 0.75rem; cursor: pointer; font-family: inherit;
+    }
+
+    .wrap {
+      width: 100%; max-width: 780px;
+      display: flex; flex-direction: column; gap: 1.8rem;
+    }
+
+    .site-header { display: flex; align-items: center; gap: 0.8rem; }
+    .logo {
+      font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text); text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    .site-nav {
+      font-size: 0.78rem; color: var(--muted);
+      display: flex; gap: 0.5rem; align-items: center;
+    }
+    .site-nav a { color: var(--sub); text-decoration: none; }
+    .site-nav a:hover { color: var(--accent); }
+    .site-nav .dot { color: var(--border-strong); }
+
+    .meta-tags { display: flex; align-items: center; gap: 0.5rem; }
+    .meta-tags:not(:has(*:not(:empty))) { display: none; }
+    .domain-tag {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 0.2rem 0.5rem;
+      border-radius: 9999px; border: 1px solid;
+    }
+    .domain-tag:empty { display: none; }
+    .tag-apd { color: var(--tag-apd); border-color: var(--tag-apd); background: var(--tag-apd-bg); }
+    .tag-pc  { color: var(--tag-pc);  border-color: var(--tag-pc);  background: var(--tag-pc-bg); }
+    .tag-co  { color: var(--tag-co);  border-color: var(--tag-co);  background: var(--tag-co-bg); }
+    .tag-pd  { color: var(--tag-pd);  border-color: var(--tag-pd);  background: var(--tag-pd-bg); }
+    .tag-elc { color: var(--tag-elc); border-color: var(--tag-elc); background: var(--tag-elc-bg); }
+    .tag-other { color: var(--muted); border-color: var(--border); background: var(--surface); }
+    .classification { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.02em; }
+    .classification:empty { display: none; }
+
+    /* Markdown content */
+    .content { line-height: 1.75; }
+    .content h1 {
+      font-size: 1.5rem; font-weight: 700; margin: 2.2rem 0 0.7rem;
+      letter-spacing: -0.02em;
+    }
+    .content h1:first-child { margin-top: 0; }
+    .content h2 {
+      font-size: 1.15rem; font-weight: 700; margin: 2rem 0 0.6rem;
+      padding-bottom: 0.35rem; border-bottom: 1px solid var(--border);
+    }
+    .content h3 { font-size: 1rem; font-weight: 700; margin: 1.5rem 0 0.45rem; }
+    .content h4 { font-size: 0.92rem; font-weight: 600; margin: 1.2rem 0 0.35rem; color: var(--sub-2); }
+    .content p { margin: 0.6rem 0; color: var(--sub-2); font-size: 0.93rem; }
+    .content ul, .content ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+    .content li { margin: 0.25rem 0; color: var(--sub-2); font-size: 0.93rem; }
+    .content li strong, .content strong { color: var(--text); font-weight: 600; }
+    .content a { color: var(--accent); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .content code {
+      font-family: "JetBrains Mono", "SF Mono", monospace; font-size: 0.85em;
+      background: var(--surface); padding: 0.12rem 0.3rem;
+      border-radius: 0.25rem; border: 1px solid var(--border);
+    }
+    .content pre {
+      margin: 0.8rem 0; padding: 1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 0.5rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+    }
+    .content pre code { background: none; border: none; padding: 0; }
+    .content blockquote {
+      margin: 0.8rem 0; padding: 0.6rem 1rem;
+      border-left: 3px solid var(--accent-border); background: var(--surface);
+      border-radius: 0 0.4rem 0.4rem 0; color: var(--sub); font-size: 0.9rem;
+    }
+    .content hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--border); }
+
+    /* GFM tables */
+    .content table {
+      width: 100%; border-collapse: collapse; margin: 0.8rem 0;
+      font-size: 0.85rem; display: block; overflow-x: auto;
+    }
+    .content thead th {
+      text-align: left; font-weight: 600; padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid var(--border-strong); color: var(--text);
+      background: var(--surface); white-space: nowrap;
+    }
+    .content tbody td {
+      padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--border);
+      color: var(--sub-2); vertical-align: top;
+    }
+    .content tbody tr:nth-child(even) { background: var(--surface); }
+    .content tbody tr:hover { background: var(--surface-2); }
+
+    /* Page navigation */
+    .page-nav {
+      display: flex; justify-content: space-between; gap: 1rem;
+      padding-top: 1.5rem; border-top: 1px solid var(--border);
+    }
+    .page-nav:empty { display: none; }
+    .nav-link {
+      font-size: 0.82rem; color: var(--accent); text-decoration: none; font-weight: 500;
+      padding: 0.5rem 0.75rem; border: 1px solid var(--border);
+      border-radius: 0.5rem; transition: border-color 0.15s, background 0.15s;
+      max-width: 48%;
+    }
+    .nav-link:hover { border-color: var(--accent-border); background: var(--accent-dim); }
+    .nav-prev { margin-right: auto; }
+    .nav-next { margin-left: auto; text-align: right; }
+
+    .github-link {
+      font-size: 0.78rem; color: var(--muted); text-decoration: none;
+      width: fit-content;
+    }
+    .github-link:hover { color: var(--accent); }
+
+    .footer {
+      font-size: 0.7rem; color: var(--muted);
+      display: flex; flex-direction: column; gap: 0.45rem;
+      width: 100%; margin-top: 0.5rem;
+    }
+    .footer-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+    .footer-biz {
+      color: var(--muted); font-size: 0.68rem; line-height: 1.6;
+      padding-top: 0.6rem; border-top: 1px solid var(--border);
+    }
+    .footer-biz strong { color: var(--sub); font-weight: 500; }
+    .footer-biz .sep { color: var(--border-strong); margin: 0 0.45rem; }
+    .footer a { color: var(--muted); text-decoration: none; }
+    .footer a:hover { color: var(--sub); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .wrap > * { animation: fadeUp 0.4s ease-out both; }
+    .wrap > *:nth-child(1) { animation-delay: 0.03s; }
+    .wrap > *:nth-child(2) { animation-delay: 0.08s; }
+    .wrap > *:nth-child(3) { animation-delay: 0.13s; }
+    .wrap > *:nth-child(4) { animation-delay: 0.18s; }
+    .wrap > *:nth-child(5) { animation-delay: 0.23s; }
+    .wrap > *:nth-child(6) { animation-delay: 0.28s; }
+
+    @media (max-width: 640px) {
+      body { padding: 2rem 1rem 3rem; }
+      .content table { font-size: 0.78rem; }
+      .page-nav { flex-direction: column; }
+      .nav-link { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <button id="btn-theme" onclick="toggleTheme()" aria-label="테마 전환"></button>
+  </div>
+
+  <div class="wrap">
+
+    <div class="site-header">
+      <a href="/" class="logo">prop<span>sol</span></a>
+      <nav class="site-nav">
+        <span class="dot">·</span>
+        <a href="/">가이드</a>
+        <span class="dot">·</span>
+        <a href="/matrix">매트릭스</a>
+        <span class="dot">·</span>
+        <a href="/meta/methodology">방법론</a>
+      </nav>
+    </div>
+
+    <div class="meta-tags">
+      <span class="domain-tag {{DOMAIN_CLASS}}">{{DOMAIN_TAG}}</span>
+      <span class="classification">{{CLASSIFICATION}}</span>
+    </div>
+
+    <article class="content">
+{{CONTENT}}
+    </article>
+
+    <div class="page-nav">{{NAV_PREV}}{{NAV_NEXT}}</div>
+
+    <a class="github-link" href="https://github.com/yanghoeg/itgc-to-isms-p/blob/main/{{GITHUB_PATH}}" target="_blank" rel="noopener">GitHub에서 보기 →</a>
+
+    <div class="footer">
+      <div class="footer-row">
+        <span>© 2024 propsol</span>
+        <a href="https://propsol.co.kr">propsol.co.kr</a>
+        <a href="https://github.com/yanghoeg/itgc-to-isms-p" target="_blank" rel="noopener">itgc-to-isms-p</a>
+      </div>
+      <div class="footer-biz">
+        <strong>주식회사 프로프솔루션</strong> <span class="sep">·</span> 대표 양주웅 <span class="sep">·</span> 사업자등록번호 781-86-03245 <span class="sep">·</span> yjw@propsol.co.kr
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function getEffectiveTheme() {
+      const t = localStorage.getItem('theme');
+      if (t) return t;
+      return matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+    }
+    function applyThemeIcon() {
+      const btn = document.getElementById('btn-theme');
+      if (btn) btn.textContent = getEffectiveTheme() === 'dark' ? '☀️' : '🌙';
+    }
+    function toggleTheme() {
+      const next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      applyThemeIcon();
+    }
+    applyThemeIcon();
+  </script>
+</body>
+</html>

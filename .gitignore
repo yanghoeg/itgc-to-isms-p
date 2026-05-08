@@ -7,6 +7,10 @@ CLAUDE.md
 # 개인 환경 helper 스크립트 (양획 머신 전용)
 bin/
 
+# Site build output
+site/dist/
+site/node_modules/
+
 # OS / 에디터
 .DS_Store
 Thumbs.db

@@ -211,6 +211,35 @@ function buildIndex(criteria) {
   console.log(`  index (${writtenCount}/${total} written)`);
 }
 
+// --- Build 404 page ---
+
+// Pages는 미매칭 경로에 index.html을 200으로 돌려주고 있었다(soft 404).
+// _redirects의 splat 규칙이 정적 자산보다 뒤에 평가되므로, 실제 페이지는 그대로 뜨고
+// 없는 경로만 404.html + 404 status로 떨어진다.
+function build404() {
+  const content = `<h1>페이지를 찾을 수 없습니다</h1>
+<p>요청하신 주소가 잘못되었거나, 아직 작성되지 않은 인증기준일 수 있습니다.</p>
+<p><a href="/">전체 인증기준 목록</a> · <a href="/matrix">매핑 매트릭스</a></p>`;
+
+  const html = TEMPLATE
+    .replace(/\{\{TITLE\}\}/g, '페이지를 찾을 수 없습니다')
+    .replace(/\{\{CRITERION_NUM\}\}/g, '')
+    .replace(/\{\{DOMAIN_TAG\}\}/g, '')
+    .replace(/\{\{DOMAIN_CLASS\}\}/g, '')
+    .replace(/\{\{CLASSIFICATION\}\}/g, '')
+    .replace(/\{\{CONTENT\}\}/g, content)
+    .replace(/\{\{NAV_PREV\}\}/g, '')
+    .replace(/\{\{NAV_NEXT\}\}/g, '')
+    .replace(/\{\{GITHUB_PATH\}\}/g, 'README.md')
+    .replace(/\{\{SLUG\}\}/g, '')
+    .replace('<meta name="robots" content="index, follow" />', '<meta name="robots" content="noindex, follow" />')
+    .replace(/<a class="github-link"[\s\S]*?<\/a>/, '');
+
+  writeFileSync(join(DIST, '404.html'), html);
+  writeFileSync(join(DIST, '_redirects'), '/* /404.html 404\n');
+  console.log('  404.html + _redirects');
+}
+
 // --- Build sitemap.xml ---
 
 function buildSitemap(criteria, metaSlugs) {
@@ -272,6 +301,9 @@ buildMatrixPage();
 
 console.log('\nBuilding index:');
 buildIndex(criteria);
+
+console.log('\nBuilding 404:');
+build404();
 
 console.log('\nBuilding sitemap:');
 buildSitemap(criteria, metaSlugs);

@@ -213,12 +213,15 @@ function buildIndex(criteria) {
 
 // --- Build sitemap.xml ---
 
-function buildSitemap(criteria) {
+function buildSitemap(criteria, metaSlugs) {
   const base = 'https://guide.propsol.co.kr';
   const today = new Date().toISOString().slice(0, 10);
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
   xml += `  <url><loc>${base}/</loc><lastmod>${today}</lastmod></url>\n`;
   xml += `  <url><loc>${base}/matrix</loc><lastmod>${today}</lastmod></url>\n`;
+  for (const slug of metaSlugs) {
+    xml += `  <url><loc>${base}/meta/${slug}</loc><lastmod>${today}</lastmod></url>\n`;
+  }
   for (const c of criteria.filter(c => c.written)) {
     xml += `  <url><loc>${base}/${c.num}</loc><lastmod>${today}</lastmod></url>\n`;
   }
@@ -255,9 +258,13 @@ for (const filepath of contentFiles) {
 
 console.log('\nBuilding meta pages:');
 const metaFiles = ['methodology.md', 'reading-order.md', 'why-this-repo.md'];
+const metaSlugs = [];
 for (const name of metaFiles) {
   const path = join(META_DIR, name);
-  if (existsSync(path)) buildMetaPage(path);
+  if (existsSync(path)) {
+    buildMetaPage(path);
+    metaSlugs.push(name.replace(/\.md$/, ''));
+  }
 }
 
 console.log('\nBuilding matrix:');
@@ -267,7 +274,7 @@ console.log('\nBuilding index:');
 buildIndex(criteria);
 
 console.log('\nBuilding sitemap:');
-buildSitemap(criteria);
+buildSitemap(criteria, metaSlugs);
 
 if (existsSync(join(ROOT, 'site', 'assets'))) {
   cpSync(join(ROOT, 'site', 'assets'), join(DIST, 'assets'), { recursive: true });

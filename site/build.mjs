@@ -186,14 +186,14 @@ function buildIndex(criteria) {
     if (items.length === 0) continue;
     const written = items.filter(i => i.written).length;
 
-    listHtml += `<div class="domain-group">`;
+    listHtml += `<div class="domain-group" data-domain="${d.key}">`;
     listHtml += `<h3 class="domain-title"><span class="domain-tag ${domainClass(d.key)}">${d.key === '(참고)' ? '참고' : d.key}</span> ${d.label} <small>${written} / ${items.length}</small></h3>`;
     listHtml += `<ul class="criteria-list">`;
     for (const item of items) {
       if (item.written) {
-        listHtml += `<li class="written"><a href="/${item.num}">${item.num} ${item.title}</a></li>`;
+        listHtml += `<li class="written" data-search="${item.num} ${item.title} ${item.domain} ${item.classification}"><a href="/${item.num}"><span>${item.num} ${item.title}</span><small>${item.classification} · ${item.domain}</small></a></li>`;
       } else {
-        listHtml += `<li class="pending"><span>${item.num} ${item.title}</span></li>`;
+        listHtml += `<li class="pending" data-search="${item.num} ${item.title} ${item.domain} ${item.classification}"><span>${item.num} ${item.title}</span><small>작성 예정</small></li>`;
       }
     }
     listHtml += `</ul></div>`;
@@ -272,6 +272,14 @@ console.log(`Parsed ${criteria.length} criteria from MATRIX.md\n`);
 
 const contentFiles = findContentFiles(MAPPING_DIR);
 console.log(`Found ${contentFiles.length} content files\n`);
+
+// 실제 Markdown 파일을 공개 여부의 단일 기준으로 사용한다.
+// MATRIX.md의 수동 화살표 표시가 늦게 갱신되어도 홈페이지·이전/다음·사이트맵에서
+// 이미 작성된 문서가 누락되지 않도록 한다.
+const writtenNums = new Set(contentFiles.map(extractNum).filter(Boolean));
+for (const criterion of criteria) {
+  criterion.written = writtenNums.has(criterion.num);
+}
 
 console.log('Building pages:');
 for (const filepath of contentFiles) {

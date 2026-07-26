@@ -2,7 +2,7 @@
 
 회계법인 IT 감사인의 시각으로 한국 ISMS-P 인증기준을 ITGC 감사 절차에 매핑한 실무 노트.
 
-> ⚠️ **현재 작성 중 (10 / 101 작성 완료).** 101개 인증기준 매핑은 점진적으로 채워집니다. 전체 진행 현황은 [`01-itgc-mapping/MATRIX.md`](./01-itgc-mapping/MATRIX.md), 진행 방식·읽기 순서는 [`00-meta/reading-order.md`](./00-meta/reading-order.md) 참조.
+> ⚠️ **현재 작성 중.** 101개 인증기준 매핑은 점진적으로 채워집니다. 전체 진행 현황은 [`01-itgc-mapping/MATRIX.md`](./01-itgc-mapping/MATRIX.md), 진행 방식·읽기 순서는 [`00-meta/reading-order.md`](./00-meta/reading-order.md) 참조.
 >
 > 📖 **온라인 버전**: [guide.propsol.co.kr](https://guide.propsol.co.kr) — 같은 내용을 웹에서 읽기 좋게 빌드한 정적 사이트.
 

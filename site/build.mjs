@@ -182,30 +182,45 @@ function buildIndex(criteria) {
 
   let listHtml = '';
   for (const d of domains) {
-    const items = criteria.filter(c => c.domain === d.key || (d.key === '(참고)' && c.classification === '기타'));
+    // 홈페이지는 읽을 수 있는 공개 가이드의 발견에 집중한다.
+    // 미작성 101개 전체 현황은 별도 매트릭스 페이지에서 제공한다.
+    const items = criteria.filter(c =>
+      c.written &&
+      (c.domain === d.key || (d.key === '(참고)' && c.classification === '기타'))
+    );
     if (items.length === 0) continue;
-    const written = items.filter(i => i.written).length;
 
     listHtml += `<div class="domain-group" data-domain="${d.key}">`;
-    listHtml += `<h3 class="domain-title"><span class="domain-tag ${domainClass(d.key)}">${d.key === '(참고)' ? '참고' : d.key}</span> ${d.label} <small>${written} / ${items.length}</small></h3>`;
+    listHtml += `<h3 class="domain-title"><span class="domain-tag ${domainClass(d.key)}">${d.key === '(참고)' ? '참고' : d.key}</span> ${d.label} <small>${items.length}개 공개</small></h3>`;
     listHtml += `<ul class="criteria-list">`;
     for (const item of items) {
-      if (item.written) {
-        listHtml += `<li class="written" data-search="${item.num} ${item.title} ${item.domain} ${item.classification}"><a href="/${item.num}"><span>${item.num} ${item.title}</span><small>${item.classification} · ${item.domain}</small></a></li>`;
-      } else {
-        listHtml += `<li class="pending" data-search="${item.num} ${item.title} ${item.domain} ${item.classification}"><span>${item.num} ${item.title}</span><small>작성 예정</small></li>`;
-      }
+      listHtml += `<li class="written" data-search="${item.num} ${item.title} ${item.domain} ${item.classification}"><a href="/${item.num}"><span>${item.num} ${item.title}</span><small>${item.classification} · ${item.domain}</small></a></li>`;
     }
     listHtml += `</ul></div>`;
   }
 
   const total = criteria.length;
   const writtenCount = criteria.filter(c => c.written).length;
+  const writtenByDomain = new Map();
+  for (const criterion of criteria.filter(c => c.written)) {
+    writtenByDomain.set(criterion.domain, (writtenByDomain.get(criterion.domain) || 0) + 1);
+  }
+  const [leadingDomain, leadingCount] = [...writtenByDomain.entries()]
+    .sort((a, b) => b[1] - a[1])[0] || ['ITGC', 0];
+  const leadingLabels = {
+    APD: '접근권한',
+    PC: '변경관리',
+    CO: 'IT 운영',
+    PD: '프로그램 개발',
+    ELC: '전사수준통제',
+  };
 
   let html = INDEX_TEMPLATE
     .replace(/\{\{CRITERIA_LIST\}\}/g, listHtml)
     .replace(/\{\{TOTAL\}\}/g, String(total))
-    .replace(/\{\{WRITTEN\}\}/g, String(writtenCount));
+    .replace(/\{\{WRITTEN\}\}/g, String(writtenCount))
+    .replace(/\{\{LEADING_DOMAIN\}\}/g, leadingLabels[leadingDomain] || leadingDomain)
+    .replace(/\{\{LEADING_COUNT\}\}/g, String(leadingCount));
 
   writeFileSync(join(DIST, 'index.html'), html);
   console.log(`  index (${writtenCount}/${total} written)`);

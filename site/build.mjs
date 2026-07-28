@@ -11,6 +11,24 @@ const INDEX_TEMPLATE = readFileSync(join(ROOT, 'site', 'index-template.html'), '
 
 marked.setOptions({ gfm: true, breaks: false });
 
+// Rewrite repository-local Markdown links to their generated site routes.
+function renderMarkdown(md) {
+  const rewritten = md.replace(/\]\(([^)\s]+\.md)(#[^)]+)?\)/g, (match, href, hash = '') => {
+    const name = basename(href, '.md');
+    const criterion = name.match(/^(\d+\.\d+\.\d+)-/);
+    if (criterion) return `](/${criterion[1]}${hash})`;
+    if (name === 'MATRIX') return `](/matrix${hash})`;
+    if (['methodology', 'reading-order', 'why-this-repo'].includes(name)) {
+      return `](/meta/${name}${hash})`;
+    }
+    if (name === 'README' && href.includes('01-itgc-mapping')) {
+      return `](/matrix${hash})`;
+    }
+    return match;
+  });
+  return marked.parse(rewritten);
+}
+
 // --- Parse MATRIX.md for 101 criteria metadata ---
 
 function parseMatrix() {
@@ -86,7 +104,7 @@ function classificationLabel(c) {
 
 function buildPage(filepath, meta, allCriteria) {
   const md = readFileSync(filepath, 'utf-8');
-  const content = marked.parse(md);
+  const content = renderMarkdown(md);
   const num = meta.num;
   const domain = extractDomain(filepath);
 
@@ -122,7 +140,7 @@ function buildPage(filepath, meta, allCriteria) {
 
 function buildMetaPage(filepath) {
   const md = readFileSync(filepath, 'utf-8');
-  const content = marked.parse(md);
+  const content = renderMarkdown(md);
   const name = basename(filepath, '.md');
   const titleLine = md.split('\n')[0].replace(/^#\s*/, '');
 
@@ -148,7 +166,7 @@ function buildMetaPage(filepath) {
 
 function buildMatrixPage() {
   const md = readFileSync(join(MAPPING_DIR, 'MATRIX.md'), 'utf-8');
-  const content = marked.parse(md);
+  const content = renderMarkdown(md);
 
   let html = TEMPLATE
     .replace(/\{\{TITLE\}\}/g, 'ISMS-P × ITGC 매핑 매트릭스')

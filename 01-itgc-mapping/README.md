@@ -23,7 +23,7 @@ ITGC 표준 4영역(APD/PC/CO/PD)에 직접 매핑되는 정도에 따라 3 분�
 
 ## 페이지 구성
 
-각 인증기준 페이지는 다음 6개 섹션으로 구성. 자세한 작성 규칙은 [`../00-meta/methodology.md`](../00-meta/methodology.md) §2 참조.
+각 인증기준 페이지는 다음 6개 섹션으로 짠다. 자세한 작성 규칙은 [`../00-meta/methodology.md`](../00-meta/methodology.md) §2 참조.
 
 1. ISMS-P 인증기준 (요약)
 2. ITGC 매핑 (영역 + 분류)

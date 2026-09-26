@@ -63,6 +63,8 @@ button { font: inherit; }
 .nav-link { max-width: 48%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; color: var(--green); font-size: 14px; text-decoration: none; }
 .nav-link:hover { border-color: var(--green); background: var(--green-soft); }
 .nav-next { margin-left: auto; text-align: right; }
+.article-author { margin: 0 0 24px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.article-author a { color: var(--green); text-underline-offset: 3px; }
 .github-link { display: inline-block; margin-top: 24px; font-size: 13px; }
 .article-sidebar { position: sticky; top: 92px; min-width: 0; }
 .toc { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }

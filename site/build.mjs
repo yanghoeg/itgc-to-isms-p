@@ -11,6 +11,33 @@ const INDEX_TEMPLATE = readFileSync(join(ROOT, 'site', 'index-template.html'), '
 
 const routes = new Map();
 
+function articleSchema(title, slug) {
+  const url = `https://guide.propsol.co.kr/${slug}`;
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    '@id': `${url}#article`,
+    url,
+    mainEntityOfPage: url,
+    headline: title,
+    inLanguage: 'ko-KR',
+    author: {
+      '@type': 'Person',
+      '@id': 'https://propsol.co.kr/#person',
+      name: '양주웅',
+      url: 'https://propsol.co.kr/about/yjw',
+    },
+    publisher: {
+      '@type': 'Organization',
+      '@id': 'https://propsol.co.kr/#organization',
+      name: '주식회사 프로프솔루션',
+      url: 'https://propsol.co.kr/',
+    },
+  };
+  const json = JSON.stringify(data).replace(/</g, '\\u003c');
+  return `<script type="application/ld+json">${json}</script>`;
+}
+
 // --- Parse MATRIX.md for 101 criteria metadata ---
 
 function parseMatrix() {
@@ -101,6 +128,7 @@ function buildPage(filepath, meta, allCriteria) {
   const githubPath = filepath.replace(ROOT + '/', '');
 
   let html = TEMPLATE
+    .replace('{{ARTICLE_SCHEMA}}', () => articleSchema(`${num} ${meta.title}`, num))
     .replace(/\{\{TITLE\}\}/g, `${num} ${meta.title}`)
     .replace(/\{\{CRITERION_NUM\}\}/g, num)
     .replace(/\{\{DOMAIN_TAG\}\}/g, domain)
@@ -128,6 +156,7 @@ function buildMetaPage(filepath) {
   const titleLine = md.split('\n')[0].replace(/^#\s*/, '');
 
   let html = TEMPLATE
+    .replace('{{ARTICLE_SCHEMA}}', () => articleSchema(titleLine, `meta/${name}`))
     .replace(/\{\{TITLE\}\}/g, titleLine)
     .replace(/\{\{CRITERION_NUM\}\}/g, '')
     .replace(/\{\{DOMAIN_TAG\}\}/g, '')
@@ -161,6 +190,7 @@ function buildMatrixPage(criteria) {
   const { content, toc } = renderMarkdown(md, filepath, routes, ROOT);
 
   let html = TEMPLATE
+    .replace('{{ARTICLE_SCHEMA}}', () => articleSchema('ISMS-P × ITGC 매핑 매트릭스', 'matrix'))
     .replace(/\{\{TITLE\}\}/g, 'ISMS-P × ITGC 매핑 매트릭스')
     .replace(/\{\{CRITERION_NUM\}\}/g, '')
     .replace(/\{\{DOMAIN_TAG\}\}/g, '')
@@ -248,6 +278,7 @@ function build404() {
 <p><a href="/">전체 인증기준 목록</a> · <a href="/matrix">매핑 매트릭스</a></p>`;
 
   const html = TEMPLATE
+    .replace('{{ARTICLE_SCHEMA}}', '')
     .replace(/\{\{TITLE\}\}/g, '페이지를 찾을 수 없습니다')
     .replace(/\{\{CRITERION_NUM\}\}/g, '')
     .replace(/\{\{DOMAIN_TAG\}\}/g, '')
@@ -260,6 +291,7 @@ function build404() {
     .replace(/\{\{GITHUB_PATH\}\}/g, 'README.md')
     .replace(/\{\{SLUG\}\}/g, '')
     .replace('<meta name="robots" content="index, follow" />', '<meta name="robots" content="noindex, follow" />')
+    .replace(/<p class="article-author">[\s\S]*?<\/p>/, '')
     .replace(/<a class="github-link"[\s\S]*?<\/a>/, '');
 
   writeFileSync(join(DIST, '404.html'), html);

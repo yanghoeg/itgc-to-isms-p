@@ -52,6 +52,7 @@ function parseMatrix() {
       title: title.trim(),
       classification: classification.trim(),
       domain: domain.trim(),
+      primaryDomain: domain.split('+')[0].trim(),
       subdomain: subdomain.trim(),
       written: page.includes('→'),
     });
@@ -227,7 +228,7 @@ function buildIndex(criteria) {
     // 미작성 101개 전체 현황은 별도 매트릭스 페이지에서 제공한다.
     const items = criteria.filter(c =>
       c.written &&
-      (c.domain === d.key || (d.key === '(참고)' && c.classification === '기타'))
+      (c.primaryDomain === d.key || (d.key === '(참고)' && c.classification === '기타'))
     );
     if (items.length === 0) continue;
 
@@ -244,7 +245,7 @@ function buildIndex(criteria) {
   const writtenCount = criteria.filter(c => c.written).length;
   const writtenByDomain = new Map();
   for (const criterion of criteria.filter(c => c.written)) {
-    writtenByDomain.set(criterion.domain, (writtenByDomain.get(criterion.domain) || 0) + 1);
+    writtenByDomain.set(criterion.primaryDomain, (writtenByDomain.get(criterion.primaryDomain) || 0) + 1);
   }
   const [leadingDomain, leadingCount] = [...writtenByDomain.entries()]
     .sort((a, b) => b[1] - a[1])[0] || ['ITGC', 0];

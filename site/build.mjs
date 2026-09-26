@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, cpSync } from 'fs';
 import { join, dirname, basename } from 'path';
-import { marked } from 'marked';
+import { renderMarkdown } from './render.mjs';
 
 const ROOT = join(dirname(new URL(import.meta.url).pathname), '..');
 const MAPPING_DIR = join(ROOT, '01-itgc-mapping');
@@ -9,25 +9,7 @@ const DIST = join(ROOT, 'site', 'dist');
 const TEMPLATE = readFileSync(join(ROOT, 'site', 'template.html'), 'utf-8');
 const INDEX_TEMPLATE = readFileSync(join(ROOT, 'site', 'index-template.html'), 'utf-8');
 
-marked.setOptions({ gfm: true, breaks: false });
-
-// Rewrite repository-local Markdown links to their generated site routes.
-function renderMarkdown(md) {
-  const rewritten = md.replace(/\]\(([^)\s]+\.md)(#[^)]+)?\)/g, (match, href, hash = '') => {
-    const name = basename(href, '.md');
-    const criterion = name.match(/^(\d+\.\d+\.\d+)-/);
-    if (criterion) return `](/${criterion[1]}${hash})`;
-    if (name === 'MATRIX') return `](/matrix${hash})`;
-    if (['methodology', 'reading-order', 'why-this-repo'].includes(name)) {
-      return `](/meta/${name}${hash})`;
-    }
-    if (name === 'README' && href.includes('01-itgc-mapping')) {
-      return `](/matrix${hash})`;
-    }
-    return match;
-  });
-  return marked.parse(rewritten);
-}
+const routes = new Map();
 
 // --- Parse MATRIX.md for 101 criteria metadata ---
 
@@ -43,6 +25,7 @@ function parseMatrix() {
       title: title.trim(),
       classification: classification.trim(),
       domain: domain.trim(),
+      primaryDomain: domain.split('+')[0].trim(),
       subdomain: subdomain.trim(),
       written: page.includes('→'),
     });
@@ -104,7 +87,7 @@ function classificationLabel(c) {
 
 function buildPage(filepath, meta, allCriteria) {
   const md = readFileSync(filepath, 'utf-8');
-  const content = renderMarkdown(md);
+  const { content, toc } = renderMarkdown(md, filepath, routes, ROOT);
   const num = meta.num;
   const domain = extractDomain(filepath);
 
@@ -125,6 +108,7 @@ function buildPage(filepath, meta, allCriteria) {
     .replace(/\{\{DOMAIN_CLASS\}\}/g, domainClass(domain))
     .replace(/\{\{CLASSIFICATION\}\}/g, classificationLabel(meta.classification))
     .replace(/\{\{CONTENT\}\}/g, content)
+    .replace(/\{\{TOC\}\}/g, toc)
     .replace(/\{\{NAV_PREV\}\}/g, navPrev)
     .replace(/\{\{NAV_NEXT\}\}/g, navNext)
     .replace(/\{\{GITHUB_PATH\}\}/g, githubPath)
@@ -140,7 +124,7 @@ function buildPage(filepath, meta, allCriteria) {
 
 function buildMetaPage(filepath) {
   const md = readFileSync(filepath, 'utf-8');
-  const content = renderMarkdown(md);
+  const { content, toc } = renderMarkdown(md, filepath, routes, ROOT);
   const name = basename(filepath, '.md');
   const titleLine = md.split('\n')[0].replace(/^#\s*/, '');
 
@@ -151,10 +135,11 @@ function buildMetaPage(filepath) {
     .replace(/\{\{DOMAIN_CLASS\}\}/g, '')
     .replace(/\{\{CLASSIFICATION\}\}/g, '')
     .replace(/\{\{CONTENT\}\}/g, content)
+    .replace(/\{\{TOC\}\}/g, toc)
     .replace(/\{\{NAV_PREV\}\}/g, '')
     .replace(/\{\{NAV_NEXT\}\}/g, '')
     .replace(/\{\{GITHUB_PATH\}\}/g, `00-meta/${name}.md`)
-    .replace(/\{\{SLUG\}\}/g, '');
+    .replace(/\{\{SLUG\}\}/g, `meta/${name}`);
 
   const outDir = join(DIST, 'meta', name);
   mkdirSync(outDir, { recursive: true });
@@ -164,9 +149,17 @@ function buildMetaPage(filepath) {
 
 // --- Build MATRIX page ---
 
-function buildMatrixPage() {
-  const md = readFileSync(join(MAPPING_DIR, 'MATRIX.md'), 'utf-8');
-  const content = renderMarkdown(md);
+function buildMatrixPage(criteria) {
+  const filepath = join(MAPPING_DIR, 'MATRIX.md');
+  const published = criteria.filter(criterion => criterion.written);
+  const md = readFileSync(filepath, 'utf-8')
+    .replace(/^(\|\s*(\d+\.\d+\.\d+)\s*\|.+\|)\s*[^|]*\|$/gm, (line, columns, num) => {
+      const criterion = criteria.find(item => item.num === num);
+      if (!criterion) return line;
+      return `${columns} ${criterion.written ? `[→ 읽기](/${num})` : '(작성 예정)'} |`;
+    })
+    .replace('## 진행 현황', `## 진행 현황\n\n**${published.length} / ${criteria.length}개 공개** · ${published.map(item => `[${item.num}](/${item.num})`).join(', ')}`);
+  const { content, toc } = renderMarkdown(md, filepath, routes, ROOT);
 
   let html = TEMPLATE
     .replace(/\{\{TITLE\}\}/g, 'ISMS-P × ITGC 매핑 매트릭스')
@@ -175,10 +168,11 @@ function buildMatrixPage() {
     .replace(/\{\{DOMAIN_CLASS\}\}/g, '')
     .replace(/\{\{CLASSIFICATION\}\}/g, '')
     .replace(/\{\{CONTENT\}\}/g, content)
+    .replace(/\{\{TOC\}\}/g, toc)
     .replace(/\{\{NAV_PREV\}\}/g, '')
     .replace(/\{\{NAV_NEXT\}\}/g, '')
     .replace(/\{\{GITHUB_PATH\}\}/g, '01-itgc-mapping/MATRIX.md')
-    .replace(/\{\{SLUG\}\}/g, '');
+    .replace(/\{\{SLUG\}\}/g, 'matrix');
 
   const outDir = join(DIST, 'matrix');
   mkdirSync(outDir, { recursive: true });
@@ -204,7 +198,7 @@ function buildIndex(criteria) {
     // 미작성 101개 전체 현황은 별도 매트릭스 페이지에서 제공한다.
     const items = criteria.filter(c =>
       c.written &&
-      (c.domain === d.key || (d.key === '(참고)' && c.classification === '기타'))
+      (c.primaryDomain === d.key || (d.key === '(참고)' && c.classification === '기타'))
     );
     if (items.length === 0) continue;
 
@@ -221,7 +215,7 @@ function buildIndex(criteria) {
   const writtenCount = criteria.filter(c => c.written).length;
   const writtenByDomain = new Map();
   for (const criterion of criteria.filter(c => c.written)) {
-    writtenByDomain.set(criterion.domain, (writtenByDomain.get(criterion.domain) || 0) + 1);
+    writtenByDomain.set(criterion.primaryDomain, (writtenByDomain.get(criterion.primaryDomain) || 0) + 1);
   }
   const [leadingDomain, leadingCount] = [...writtenByDomain.entries()]
     .sort((a, b) => b[1] - a[1])[0] || ['ITGC', 0];
@@ -261,6 +255,7 @@ function build404() {
     .replace(/\{\{DOMAIN_CLASS\}\}/g, '')
     .replace(/\{\{CLASSIFICATION\}\}/g, '')
     .replace(/\{\{CONTENT\}\}/g, content)
+    .replace(/\{\{TOC\}\}/g, '')
     .replace(/\{\{NAV_PREV\}\}/g, '')
     .replace(/\{\{NAV_NEXT\}\}/g, '')
     .replace(/\{\{GITHUB_PATH\}\}/g, 'README.md')
@@ -314,6 +309,17 @@ for (const criterion of criteria) {
   criterion.written = writtenNums.has(criterion.num);
 }
 
+for (const filepath of contentFiles) {
+  const num = extractNum(filepath);
+  if (criteria.some(criterion => criterion.num === num)) routes.set(filepath, `/${num}`);
+}
+const metaFiles = ['methodology.md', 'reading-order.md', 'why-this-repo.md'];
+for (const name of metaFiles) {
+  const filepath = join(META_DIR, name);
+  if (existsSync(filepath)) routes.set(filepath, `/meta/${basename(name, '.md')}`);
+}
+routes.set(join(MAPPING_DIR, 'MATRIX.md'), '/matrix');
+
 console.log('Building pages:');
 for (const filepath of contentFiles) {
   const num = extractNum(filepath);
@@ -327,7 +333,6 @@ for (const filepath of contentFiles) {
 }
 
 console.log('\nBuilding meta pages:');
-const metaFiles = ['methodology.md', 'reading-order.md', 'why-this-repo.md'];
 const metaSlugs = [];
 for (const name of metaFiles) {
   const path = join(META_DIR, name);
@@ -338,7 +343,7 @@ for (const name of metaFiles) {
 }
 
 console.log('\nBuilding matrix:');
-buildMatrixPage();
+buildMatrixPage(criteria);
 
 console.log('\nBuilding index:');
 buildIndex(criteria);

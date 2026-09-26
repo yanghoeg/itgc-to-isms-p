@@ -1,6 +1,6 @@
 # 2-indirect — ITGC 간접 매핑 영역 (Entity-Level Controls)
 
-ITGC가 직접 절차 단위로 다루지 않지만, Entity-Level Controls(ELC, 전사수준통제) 차원에서 검증하는 ISMS-P 인증기준. 거버넌스, 정책, 인적 보안, 외부자 관리 등.
+ITGC가 개별 감사절차로 직접 다루지는 않지만 Entity-Level Controls(ELC, 전사수준통제) 차원에서 검증하는 ISMS-P 인증기준이다. 거버넌스, 정책, 인적 보안, 외부자 관리 등이 여기에 속한다.
 
 | 부영역 | 폴더 | ISMS-P 매핑 | 개수 |
 |---|---|---|---|

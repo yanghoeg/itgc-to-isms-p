@@ -10,4 +10,4 @@ ITGC 표준 4영역(APD/PC/CO/PD)에 직접 매핑되는 ISMS-P 인증기준. �
 | **PD** | Program Development | [`pd/`](./pd/) | 2.8.1~2.8.5 | 5 |
 | **합계** | | | | **49** |
 
-> CO는 항목 수가 많아 5개 부영역(operations / security / incident / dr / physical)으로 세분화.
+> CO는 항목 수가 많아 5개 부영역(operations / security / incident / dr / physical)으로 나눴다.

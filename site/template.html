@@ -4,7 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    try { document.documentElement.dataset.theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'; } catch (_) {}
+    (() => {
+      const url = new URL(location.href);
+      const query = url.searchParams.get('theme');
+      let saved;
+      try { saved = localStorage.getItem('theme'); } catch (_) {}
+      const theme = query === 'dark' || query === 'light'
+        ? query : saved === 'dark' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem('theme', theme); } catch (_) {}
+      if (url.searchParams.has('theme')) {
+        url.searchParams.delete('theme');
+        history.replaceState(null, '', url.pathname + url.search + url.hash);
+      }
+    })();
   </script>
   <title>{{TITLE}} — ITGC 실무 가이드</title>
   <link rel="canonical" href="https://guide.propsol.co.kr/{{SLUG}}" />

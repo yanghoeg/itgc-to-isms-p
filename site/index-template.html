@@ -5,10 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
     (() => {
-      try {
-        const saved = localStorage.getItem("theme");
-        document.documentElement.dataset.theme = saved === "dark" ? "dark" : "light";
-      } catch (_) {}
+      const url = new URL(location.href);
+      const query = url.searchParams.get("theme");
+      let saved;
+      try { saved = localStorage.getItem("theme"); } catch (_) {}
+      const theme = query === "dark" || query === "light"
+        ? query : saved === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem("theme", theme); } catch (_) {}
+      if (url.searchParams.has("theme")) {
+        url.searchParams.delete("theme");
+        history.replaceState(null, "", url.pathname + url.search + url.hash);
+      }
     })();
   </script>
   <title>ITGC 실무 가이드 | ISMS-P 101개 기준 매핑</title>
@@ -87,6 +95,7 @@
       box-shadow:0 14px 45px rgba(22,34,46,.06);
     }
     #guide-search::placeholder { color:var(--muted); }
+    .search-feedback { max-width:830px; margin:10px 0 0; color:var(--body); font-size:13px; }
     .clear-search {
       position:absolute; top:12px; right:12px; width:36px; height:36px; border:0;
       border-radius:8px; background:transparent; color:var(--muted); cursor:pointer;
@@ -175,7 +184,7 @@
       .filters { position:static; }
       .filter-buttons { display:flex; overflow-x:auto; padding-bottom:5px; }
       .filter-button { flex:0 0 auto; }
-      .resource-links { display:none; }
+      .resource-links { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:16px; padding-top:14px; }
       .about-grid { grid-template-columns:1fr; }
       .advisory-inner { align-items:flex-start; flex-direction:column; }
     }
@@ -219,9 +228,10 @@
         <div class="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
           <label for="guide-search" hidden>가이드 검색</label>
-          <input id="guide-search" type="search" placeholder="기준번호, 통제명 또는 키워드로 검색" autocomplete="off" />
+          <input id="guide-search" type="search" placeholder="기준번호, 통제명 또는 키워드로 검색" autocomplete="off" aria-describedby="search-feedback" />
           <button class="clear-search" id="clear-search" type="button" aria-label="검색어 지우기" hidden>×</button>
         </div>
+        <p class="search-feedback" id="search-feedback" role="status" aria-live="polite" aria-atomic="true">{{WRITTEN}}개 공개 가이드에서 검색합니다.</p>
         <div class="suggestions"><span>추천:</span><button type="button">접근권한</button><button type="button">변경관리</button><button type="button">백업</button><button type="button">데이터베이스</button><button type="button">2.5.4</button></div>
         <div class="hero-actions">
           <a class="button button-primary" href="#guide-list">공개된 가이드 보기</a>
@@ -246,12 +256,12 @@
         <aside class="filters" aria-label="통제 영역 필터">
           <p class="filter-title">통제 영역</p>
           <div class="filter-buttons">
-            <button class="filter-button active" type="button" data-filter="all">전체</button>
-            <button class="filter-button" type="button" data-filter="APD">접근권한 APD</button>
-            <button class="filter-button" type="button" data-filter="PC">변경관리 PC</button>
-            <button class="filter-button" type="button" data-filter="CO">IT 운영 CO</button>
-            <button class="filter-button" type="button" data-filter="PD">프로그램 개발 PD</button>
-            <button class="filter-button" type="button" data-filter="ELC">전사수준통제 ELC</button>
+            <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">전체</button>
+            <button class="filter-button" type="button" data-filter="APD" aria-pressed="false">접근권한 APD</button>
+            <button class="filter-button" type="button" data-filter="PC" aria-pressed="false">변경관리 PC</button>
+            <button class="filter-button" type="button" data-filter="CO" aria-pressed="false">IT 운영 CO</button>
+            <button class="filter-button" type="button" data-filter="PD" aria-pressed="false">프로그램 개발 PD</button>
+            <button class="filter-button" type="button" data-filter="ELC" aria-pressed="false">전사수준통제 ELC</button>
           </div>
           <div class="resource-links">
             <a href="/matrix">101개 전체 매트릭스 →</a>
@@ -262,7 +272,7 @@
         </aside>
         <div>
           <div class="list-head">
-            <div><p class="eyebrow">기준별 가이드</p><h2>ISMS-P × ITGC 매핑</h2></div>
+            <div><p class="eyebrow">기준별 가이드</p><h2 id="guide-results-heading" tabindex="-1">ISMS-P × ITGC 매핑</h2></div>
             <span class="result-count" id="result-count">{{WRITTEN}}개 공개</span>
           </div>
           <div id="criteria-root">{{CRITERIA_LIST}}</div>
@@ -312,10 +322,26 @@
     const groups = [...document.querySelectorAll(".domain-group")];
     const items = [...document.querySelectorAll(".criteria-list li")];
     const count = document.getElementById("result-count");
+    const feedback = document.getElementById("search-feedback");
     const empty = document.getElementById("empty-state");
+    const filters = [...document.querySelectorAll(".filter-button")];
+    const resultsHeading = document.getElementById("guide-results-heading");
     let domain = "all";
 
     function normalize(value) { return value.toLocaleLowerCase("ko-KR").replace(/\s+/g, " ").trim(); }
+    function selectDomain(next) {
+      domain = next;
+      filters.forEach((button) => {
+        const active = button.dataset.filter === domain;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+    function showResults() {
+      input.blur();
+      resultsHeading.focus({ preventScroll: true });
+      resultsHeading.scrollIntoView({ block: "start" });
+    }
     function applyFilter() {
       const query = normalize(input.value);
       let visible = 0;
@@ -330,17 +356,28 @@
         group.hidden = groupVisible === 0;
       }
       count.textContent = `${visible}개 공개`;
+      const scope = domain === "all" ? "" : `${filters.find((button) => button.dataset.filter === domain).textContent.trim()} · `;
+      feedback.textContent = query
+        ? visible > 0
+          ? `${scope}검색 결과 ${visible}개. Enter를 눌러 결과로 이동하세요.`
+          : `${scope}검색 결과가 없습니다. 검색어나 통제 영역을 바꿔보세요.`
+        : `${scope}${visible}개 공개 가이드에서 검색합니다.`;
       empty.classList.toggle("visible", visible === 0);
       clear.hidden = !input.value;
     }
     input.addEventListener("input", applyFilter);
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" || event.isComposing) return;
+      event.preventDefault();
+      showResults();
+    });
     clear.addEventListener("click", () => { input.value = ""; applyFilter(); input.focus(); });
     document.querySelectorAll(".suggestions button").forEach((button) => button.addEventListener("click", () => {
-      input.value = button.textContent; applyFilter(); document.getElementById("guide-list").scrollIntoView();
+      selectDomain("all");
+      input.value = button.textContent; applyFilter(); showResults();
     }));
-    document.querySelectorAll(".filter-button").forEach((button) => button.addEventListener("click", () => {
-      domain = button.dataset.filter;
-      document.querySelectorAll(".filter-button").forEach((item) => item.classList.toggle("active", item === button));
+    filters.forEach((button) => button.addEventListener("click", () => {
+      selectDomain(button.dataset.filter);
       applyFilter();
     }));
     document.querySelectorAll(".filter-button[data-filter]:not([data-filter='all'])").forEach((button) => {
